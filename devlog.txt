@@ -3,6 +3,43 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-21] 테스팅 인프라 및 Claude Code 테스팅 스킬 적용
+-------------------------------------------------------------------------------
+
+[조사 결과]
+- 인터넷 검색으로 FastAPI/Next.js 특화 공식 Claude Code 스킬 없음 확인
+- 참고한 방법론: unit-test-design (sethdford), testing-patterns (ChrisWiles),
+  frontend-testing-expert (mcpmarket), async-testing-expert (rafaelkamimura)
+- 공식 webapp-testing 스킬(Playwright)은 Claude 마켓플레이스 설치 가능 (E2E용, P1 이후)
+
+[백엔드 테스트 인프라]
+- app/core/types.py : dialect-aware UUIDType, JSONType
+  (PostgreSQL → JSONB/native UUID, SQLite → JSON/String36 자동 전환)
+- 전체 모델 JSONB/UUID → UUIDType/JSONType으로 교체
+- tests/conftest.py : pytest-asyncio + httpx.AsyncClient + dependency_overrides 패턴
+  (인메모리 SQLite, 테스트 간 롤백 격리)
+- pyproject.toml : asyncio_mode=auto, testpaths 설정
+- aiosqlite, pytest-anyio 의존성 추가
+- tests/test_health.py : 스모크 테스트 (통과 확인)
+
+[프론트엔드 테스트 인프라]
+- vitest + @vitest/coverage-v8 + @testing-library/react + @testing-library/user-event
+  + @testing-library/jest-dom + jsdom + msw 설치
+- vitest.config.ts : jsdom 환경, @/* alias, 커버리지 설정
+- vitest.setup.ts  : jest-dom 확장 matchers 초기화
+- mocks/handlers.ts : MSW API 핸들러 (stores, orders)
+- mocks/server.ts   : MSW Node 서버 설정
+- __tests__/components/smoke.test.tsx : 스모크 테스트 (통과 확인)
+- package.json scripts: test, test:coverage 추가
+
+[Claude Code 스킬 추가]
+- .claude/skills/backend-test/SKILL.md : FastAPI pytest 패턴 가이드
+- .claude/skills/frontend-test/SKILL.md : Vitest + RTL + MSW 패턴 가이드
+
+[CI 업데이트]
+- .github/workflows/ci.yml : frontend job에 "Unit tests (Vitest)" 스텝 추가
+
+-------------------------------------------------------------------------------
 [2026-04-21] P0 설계 단계 완료
 -------------------------------------------------------------------------------
 

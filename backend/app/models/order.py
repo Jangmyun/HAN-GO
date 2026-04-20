@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.core.types import JSONType, UUIDType
 
 
 class OrderStatus(str, enum.Enum):
@@ -44,13 +44,13 @@ class CancellationStatus(str, enum.Enum):
 class Order(Base):
     __tablename__ = "orders"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)  # e.g. HG-A3F7
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    store_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("stores.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    order_code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False)
+    store_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("stores.id"), nullable=False)
     total_price: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), default=OrderStatus.PENDING)
-    guest_phone: Mapped[str | None] = mapped_column(String, nullable=True)  # Guest 빠른 조회용
+    guest_phone: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -60,15 +60,15 @@ class Order(Base):
 class OrderItem(Base):
     __tablename__ = "order_items"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
-    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    order_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("orders.id"), nullable=False)
+    product_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("products.id"), nullable=False)
     schedule_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("performance_schedules.id"), nullable=True
+        UUIDType, ForeignKey("performance_schedules.id"), nullable=True
     )
-    seat_keys: Mapped[list | None] = mapped_column(JSONB, nullable=True)  # ["A1", "A2"]
+    seat_keys: Mapped[list | None] = mapped_column(JSONType, nullable=True)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    selected_options: Mapped[dict] = mapped_column(JSONB, default=dict)  # {spicy: "매운맛", egg: true}
+    selected_options: Mapped[dict] = mapped_column(JSONType, default=dict)
     unit_price: Mapped[int] = mapped_column(Integer, nullable=False)
     subtotal: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -76,13 +76,13 @@ class OrderItem(Base):
 class Payment(Base):
     __tablename__ = "payments"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    order_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("orders.id"), nullable=False)
     method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod), nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[PaymentStatus] = mapped_column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
     confirmed_by: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("store_accounts.id"), nullable=True
+        UUIDType, ForeignKey("store_accounts.id"), nullable=True
     )
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -90,11 +90,11 @@ class Payment(Base):
 class CancellationRequest(Base):
     __tablename__ = "cancellation_requests"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    order_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
-    requested_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    order_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("orders.id"), nullable=False)
+    requested_by: Mapped[uuid.UUID] = mapped_column(UUIDType, nullable=False)
     reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[CancellationStatus] = mapped_column(Enum(CancellationStatus), default=CancellationStatus.REQUESTED)
-    resolved_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    resolved_by: Mapped[uuid.UUID | None] = mapped_column(UUIDType, nullable=True)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

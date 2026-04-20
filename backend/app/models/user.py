@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, String, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.core.types import UUIDType
 
 
 class AuthType(str, enum.Enum):
@@ -17,7 +17,7 @@ class AuthType(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
     auth_type: Mapped[AuthType] = mapped_column(Enum(AuthType), nullable=False)
     kakao_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
     nickname: Mapped[str | None] = mapped_column(String(50), nullable=True)
