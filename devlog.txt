@@ -1,0 +1,27 @@
+HAN:GO Devlog
+=============
+최신 항목이 상단에 위치합니다.
+
+-------------------------------------------------------------------------------
+[2026-04-21] 모노레포 초기화
+-------------------------------------------------------------------------------
+- frontend/ : Next.js 14 (App Router, TypeScript, Tailwind CSS, ESLint) 스캐폴딩
+  - npx create-next-app@latest 사용
+- backend/  : FastAPI + uv 패키지 매니저로 스캐폴딩
+  - uv init + fastapi[standard], pytest, httpx 의존성 추가
+  - main.py: /health 엔드포인트 포함한 FastAPI 엔트리포인트 작성
+- .gitignore : toptal gitignore.io 템플릿 적용
+  - 대상: node, python, nextjs, macos, windows, linux, visualstudiocode, jetbrains
+
+-------------------------------------------------------------------------------
+[2026-04-21] 프로젝트 문서 및 Claude Code 설정 추가
+-------------------------------------------------------------------------------
+- CLAUDE.md : 프로젝트 가이드라인, 아키텍처 개요, 개발 단계 정의
+- HAN-GO_PRD_v0.3.md : 제품 요구사항 문서 v0.3
+- .claude/settings.json : Claude Code 설정
+- .claude/skills/ : 커스텀 스킬 (migration, new-endpoint, order-state, prd-check)
+
+-------------------------------------------------------------------------------
+[2026-04-21] 레포지토리 초기화
+-------------------------------------------------------------------------------
+- GitHub 레포지토리 생성 및 Initial commit

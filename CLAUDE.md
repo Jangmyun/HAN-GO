@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Devlog
+
+**모든 작업 후 `devlog.txt`를 반드시 업데이트한다.**
+
+- 위치: 레포 루트 `/devlog.txt`
+- 형식: 최신 항목이 파일 상단, 구분선(`---`)으로 각 작업 단위 구분
+- 작업 단위: 논리적으로 연관된 변경 묶음 (파일 1개 수정도 가능, 대규모 기능은 세부 항목으로 분리)
+- 항목 헤더: `[YYYY-MM-DD] 작업 제목` (한국어)
+- 내용: 변경 파일/디렉토리, 변경 이유, 주요 결정사항을 bullet로 기록
+- 커밋 전 devlog 업데이트를 먼저 수행하고, devlog 변경도 같은 커밋에 포함
+
 ## Project Overview
 
 **HAN:GO** is a Korean university ordering, payment, and ticketing platform for Handong University — enabling student clubs and booths to conduct food sales, performance ticketing, and event reservations. It is a CRA (Computer Research Association) student project, non-officially affiliated with the school administration.
