@@ -3,6 +3,70 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-21] P0 설계 단계 완료
+-------------------------------------------------------------------------------
+
+[PRD v1.0 확정]
+- HAN-GO_PRD_v0.3.md → HAN-GO_PRD_v1.0.md 파일명 변경
+- 버전 헤더 v1.0 / 상태 "확정"으로 업데이트
+
+[백엔드 의존성 추가]
+- sqlalchemy[asyncio], asyncpg, alembic, python-jose[cryptography], passlib[bcrypt], nanoid
+- ruff, pytest-asyncio (dev)
+
+[백엔드 프로젝트 구조]
+- backend/app/core/config.py   : pydantic-settings 기반 환경 변수 관리
+- backend/app/core/database.py : async SQLAlchemy 엔진 + Base + get_db 의존성
+- backend/app/models/          : SQLAlchemy ORM 모델 (PRD §8 기반)
+  - user.py       : User (KAKAO | GUEST)
+  - store.py      : Store, StoreAccount, AdminAccount
+  - product.py    : Event, Product, PerformanceSchedule
+  - order.py      : Order, OrderItem, Payment, CancellationRequest
+  - ticket.py     : Ticket (QR 서버 검증용, nanoid token)
+  - audit.py      : AuditLog
+- backend/app/schemas/         : Pydantic v2 스키마
+  - auth, store, product, order, ticket
+- backend/app/routers/         : FastAPI 라우터 스텁 (API 스펙)
+  - auth.py    : 카카오 OAuth, Guest 로그인, Store/Admin 로그인
+  - stores.py  : 스토어 CRUD
+  - products.py: 상품 CRUD (store 중첩 라우터)
+  - orders.py  : 주문 생성 + §5.7 상태 머신 엔드포인트 전체
+  - tickets.py : QR 조회 + verify (L-2)
+  - admin.py   : 관리자 스토어 관리
+- backend/main.py 업데이트 : 모든 라우터 등록, CORS 미들웨어
+
+[Alembic 마이그레이션]
+- alembic init + env.py 비동기 asyncpg 설정
+- 7b3903b58e54_initial_schema.py : 전체 테이블 + 인덱스 수동 작성
+  - 주요 인덱스: orders(order_code), orders(guest_phone+order_code), tickets(qr_token)
+
+[Docker Compose]
+- docker-compose.yml         : PostgreSQL 16 + backend + frontend (로컬 개발)
+- backend/Dockerfile         : production (uv, no-dev)
+- backend/Dockerfile.dev     : development (uv, hot reload)
+- frontend/Dockerfile        : production (multi-stage, standalone)
+- frontend/Dockerfile.dev    : development (npm run dev)
+
+[GitHub Actions CI]
+- .github/workflows/ci.yml
+  - backend job  : ruff check + ruff format + pytest (PostgreSQL service)
+  - frontend job : ESLint + tsc --noEmit + npm run build
+
+[디자인 시스템]
+- frontend/components.json   : shadcn/ui 설정 (Radix, cssVariables)
+- frontend/app/globals.css   : HAN:GO 브랜드 컬러 + Pretendard 폰트
+  - Primary  : #4B5FFF (한동 바이올렛블루)
+  - Accent   : #F5670A (에너제틱 오렌지 "GO!")
+  - 다크 모드 지원
+- frontend/lib/utils.ts      : cn() 헬퍼 (clsx + tailwind-merge)
+
+-------------------------------------------------------------------------------
+[2026-04-21] devlog 유지 지침 추가
+-------------------------------------------------------------------------------
+- CLAUDE.md에 devlog.txt 유지 지침 추가 (모든 작업 후 업데이트)
+- devlog.txt 최초 생성
+
+-------------------------------------------------------------------------------
 [2026-04-21] 모노레포 초기화
 -------------------------------------------------------------------------------
 - frontend/ : Next.js 14 (App Router, TypeScript, Tailwind CSS, ESLint) 스캐폴딩
