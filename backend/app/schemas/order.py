@@ -36,11 +36,15 @@ class OrderResponse(BaseModel):
     id: uuid.UUID
     order_code: str
     store_id: uuid.UUID
+    user_id: uuid.UUID
     total_price: int
     status: OrderStatus
     items: list[OrderItemResponse] = []
+    guest_phone: str | None = None
     created_at: datetime
     paid_at: datetime | None
+    cancelled_at: datetime | None = None
+    completed_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 

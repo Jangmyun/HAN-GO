@@ -14,6 +14,9 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int  # seconds
+    role: str | None = None
+    user_id: str | None = None
+    store_id: str | None = None
 
 
 class StoreLoginRequest(BaseModel):

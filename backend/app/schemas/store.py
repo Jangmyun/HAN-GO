@@ -47,3 +47,9 @@ class StoreAccountCreate(BaseModel):
     email: EmailStr
     password: str
     role: str = "owner"
+
+
+class AdminStoreCreate(BaseModel):
+    """Admin 스토어 발급 — 스토어 정보 + 계정 정보 복합."""
+    store: StoreCreate
+    account: StoreAccountCreate
