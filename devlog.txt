@@ -3,6 +3,45 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-23] frontend/README.md 개발 가이드 추가
+
+변경 파일:
+- frontend/README.md: 로컬 dev 실행법(MSW 모킹/백엔드 연결), vitest 실행법, 테스트 패턴 예시, 환경변수 표, MSW 핸들러 업데이트 방법 추가
+
+변경 이유:
+- 신규 개발자가 백엔드 없이 개발 환경을 즉시 구동할 수 있도록 문서화
+
+-------------------------------------------------------------------------------
+[2026-04-23] MSW 기반 API 모킹 인프라 구축 (백엔드 독립 개발 환경)
+
+변경 파일/디렉토리:
+- frontend/mocks/handlers.ts (전면 재작성): 절대 URL 기반 전체 엔드포인트 커버 (~25개), 인메모리 상태 관리, resetMockState() export
+- frontend/mocks/browser.ts (신규): 브라우저용 MSW 서비스 워커 설정
+- frontend/mocks/fixtures/ (신규 디렉토리): 팩토리 함수 모음
+  - store.factory.ts / product.factory.ts / order.factory.ts / ticket.factory.ts / index.ts
+- frontend/components/MockProvider.tsx (신규): 클라이언트 컴포넌트, NEXT_PUBLIC_API_MOCKING=enabled 시 MSW 워커 시작
+- frontend/app/layout.tsx: MockProvider로 children 감싸기
+- frontend/vitest.setup.ts: beforeAll/afterEach/afterAll MSW 생명주기 추가, localStorage 인메모리 폴리필
+- frontend/.env.local (신규): NEXT_PUBLIC_API_MOCKING=enabled 기본값
+- frontend/public/mockServiceWorker.js (신규): npx msw init 으로 생성
+- frontend/__tests__/components/HomePage.test.tsx (신규): 스토어 목록 렌더링 통합 테스트 4개
+- frontend/__tests__/components/OrdersPage.test.tsx (신규): 주문 목록 + 인증 리다이렉트 통합 테스트 3개
+
+변경 이유:
+- 백엔드 없이 프론트엔드 개발/테스트 불가 문제 해결
+- 기존 핸들러 3개(상대 경로)는 MSW와 불일치하여 실제로 동작하지 않았음
+- API를 실제 서버가 아닌 인터페이스로 다루는 구조 정비
+
+주요 결정사항:
+- handlers.ts: 핸들러에 `http://localhost:8000` 절대 URL prefix — lib/api.ts의 BASE_URL과 일치
+- 인메모리 state 객체로 핸들러 간 데이터 일관성 유지 (POST→GET 연속 테스트 가능)
+- /orders/store/list, /orders/guest/lookup을 /orders/:id보다 먼저 등록 (라우팅 순서 의존)
+- MockProvider는 동적 import로 msw/browser를 서버 번들에서 제외
+- vitest.setup.ts: localStorage 폴리필로 jsdom --localstorage-file 경고 우회
+- auth 부분 모킹: importOriginal 패턴으로 getToken 등 실제 구현 유지, isAuthenticated만 교체
+- 테스트 결과: 8/8 통과
+
+-------------------------------------------------------------------------------
 [2026-04-21] P1A + P1B 프론트엔드 페이지 및 백엔드 API 전체 구현
 
 변경 파일/디렉토리:
