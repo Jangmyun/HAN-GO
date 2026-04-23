@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { MockProvider } from "@/components/MockProvider";
 
 export const metadata: Metadata = {
   title: "HAN:GO — 한동대 주문·결제·예매",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full">
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+          <MockProvider>{children}</MockProvider>
+        </body>
     </html>
   );
 }
