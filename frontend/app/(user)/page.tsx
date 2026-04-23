@@ -13,7 +13,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    storesApi.list().then(setStores).finally(() => setLoading(false));
+    storesApi.list()
+      .then(setStores)
+      .catch((err) => console.error("Failed to fetch stores:", err))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
