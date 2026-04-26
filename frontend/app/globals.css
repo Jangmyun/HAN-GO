@@ -107,6 +107,13 @@
 
 * {
   border-color: hsl(var(--border));
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 모든 인터랙티브 요소에서 텍스트 커서 깜빡임 방지 */
+button, a, [role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 body {

@@ -26,7 +26,7 @@ function ProductListCard({ product, storeSlug }: { product: ProductResponse; sto
           boxShadow: "0 1px 3px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
           padding: "14px", display: "flex", gap: 12, cursor: "pointer",
           opacity: isSoldOut ? 0.6 : 1,
-          position: "relative" as const,
+          position: "relative" as const, userSelect: "none",
         }}
       >
         {isSoldOut && (

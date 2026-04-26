@@ -3,6 +3,23 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-26] 인터랙티브 요소 커서 깜빡임 전면 수정
+
+변경 파일:
+- frontend/app/globals.css: `button, a, [role="button"]`에 `user-select: none; -webkit-user-select: none` 전역 적용, 모든 요소에 `-webkit-tap-highlight-color: transparent` 추가
+- frontend/components/hango/BottomNav.tsx: Link에 `select-none` Tailwind 클래스 추가
+- frontend/components/hango/StoreCard.tsx: 클릭 가능한 내부 div에 `userSelect: "none"` 추가
+- frontend/app/(user)/page.tsx: 이벤트 카드 div에 `userSelect: "none"` 추가
+- frontend/app/(user)/explore/page.tsx: 이벤트 행 div, 스토어 그리드 카드 div에 `userSelect: "none"` 추가
+- frontend/app/(user)/stores/[slug]/page.tsx: ProductListCard 내부 div에 `userSelect: "none"` 추가
+- frontend/app/(user)/me/page.tsx: 메뉴 항목 div에 `userSelect: "none"` 추가
+
+주요 결정사항:
+- 전역 CSS로 `button`, `a`, `[role="button"]` 커버 → `<button>`/`<Link>` 태그 내부 자식 요소는 상속으로 처리
+- div onClick 또는 cursor:pointer를 가지나 button/a 태그가 아닌 요소만 인라인 `userSelect: "none"` 개별 적용
+- 결과적으로 모든 터치/클릭 시 텍스트 I-빔 커서 깜빡임 제거
+
+-------------------------------------------------------------------------------
 [2026-04-26] P1b 디자인 파일 기준 주문·결제·QR 플로우 UI 재설계 (branch: design/p1b-redesign)
 
 변경 파일:

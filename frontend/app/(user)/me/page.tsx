@@ -267,7 +267,7 @@ export default function MyPage() {
               style={{
                 display: "flex", alignItems: "center", padding: "15px 18px",
                 borderBottom: i < MENU_ITEMS.length - 1 ? "1px solid #F3F4F6" : "none",
-                cursor: "pointer",
+                cursor: "pointer", userSelect: "none",
               }}
             >
               <span style={{ fontSize: 14, marginRight: 10 }}>{m.icon}</span>
