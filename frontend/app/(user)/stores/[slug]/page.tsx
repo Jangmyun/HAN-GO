@@ -279,8 +279,8 @@ export default function StoreDetailPage() {
         <div style={{ height: 24 }}/>
       </div>
 
-      {/* 하단 CTA */}
-      {activeTab === 0 && products.length > 0 && (
+      {/* 하단 CTA — PERFORMANCE: 첫 번째 상품(공연)으로 이동 */}
+      {activeTab === 0 && products.length > 0 && store.type === "PERFORMANCE" && (
         <div
           style={{
             padding: "12px 16px 28px",
@@ -290,6 +290,7 @@ export default function StoreDetailPage() {
           }}
         >
           <button
+            onClick={() => router.push(`/stores/${store.slug}/products/${products[0].id}`)}
             style={{
               width: "100%", height: 54,
               background: "#4B5FFF", color: "#fff",
@@ -298,7 +299,7 @@ export default function StoreDetailPage() {
               boxShadow: "0 2px 8px rgba(75,95,255,0.30)",
             }}
           >
-            {store.type === "PERFORMANCE" ? "예매하기" : "주문하기"}
+            예매하기
           </button>
         </div>
       )}

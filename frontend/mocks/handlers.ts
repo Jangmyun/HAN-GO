@@ -1,33 +1,68 @@
 import { http, HttpResponse } from "msw";
-import type { OrderStatus, StoreStatus } from "@/lib/types";
+import type { OrderStatus, PerformanceSchedule, StoreStatus } from "@/lib/types";
 import {
   createStore,
-  createStoreList,
   createProduct,
   createOrder,
   createTicket,
+  createSchedule,
   resetStoreCounter,
   resetProductCounter,
   resetOrderCounter,
   resetTicketCounter,
+  resetScheduleCounter,
 } from "./fixtures";
 
 // ─── 인메모리 상태 ────────────────────────────────────────────────────────────
 
 function buildInitialState() {
-  const stores = createStoreList(3);
+  const perfStore = createStore({
+    name: "멜로디 공연 동아리",
+    slug: "melody-concert",
+    type: "PERFORMANCE",
+    location: "효암채플",
+    opening_hours: "19:00 - 21:00",
+    description: "봄 정기 공연 티켓을 예매하세요.",
+    payment_methods: [
+      { type: "kakaopay_url", value: "https://qr.kakaopay.com/sample" },
+      { type: "bank_account", bank: "카카오뱅크", number: "3333-XX-XXXXXXX", holder: "멜로디공연동아리" },
+    ],
+  });
+  const foodStore = createStore({
+    name: "한동 푸드코트",
+    slug: "handong-food",
+    type: "FOOD",
+    location: "한동대학교 운동장 A구역",
+    opening_hours: "10:00 - 18:00",
+    description: "맛있는 음식을 즐겨보세요.",
+  });
+  const stores = [perfStore, foodStore];
+
+  const perfProduct = createProduct({
+    store_id: perfStore.id,
+    type: "PERFORMANCE",
+    name: "봄 정기공연",
+    description: "멜로디 동아리의 2026 봄 정기 공연입니다.",
+    base_price: 10000,
+  });
   const products = [
-    createProduct({ store_id: stores[0].id, name: "불고기 버거", base_price: 6000 }),
-    createProduct({ store_id: stores[0].id, name: "감자튀김", base_price: 3000 }),
-    createProduct({ store_id: stores[1].id, type: "PERFORMANCE", name: "봄 공연", base_price: 15000 }),
+    perfProduct,
+    createProduct({ store_id: foodStore.id, name: "불고기 버거", base_price: 6000 }),
+    createProduct({ store_id: foodStore.id, name: "감자튀김", base_price: 3000 }),
   ];
+
+  const schedules: PerformanceSchedule[] = [
+    createSchedule({ product_id: perfProduct.id, datetime: "2026-05-10T10:00:00.000Z", venue: "효암채플" }),
+    createSchedule({ product_id: perfProduct.id, datetime: "2026-05-10T14:00:00.000Z", venue: "효암채플" }),
+  ];
+
   const orderList = [
-    createOrder({ store_id: stores[0].id, status: "pending" }),
+    createOrder({ store_id: foodStore.id, status: "pending" }),
   ];
   const tickets = [
     createTicket({ id: "seed-ticket", order_item_id: "seed-item", qr_token: "seed-qr-token-abc123" }),
   ];
-  return { stores, products, orderList, tickets };
+  return { stores, products, schedules, orderList, tickets };
 }
 
 let state = buildInitialState();
@@ -37,6 +72,7 @@ export function resetMockState() {
   resetProductCounter();
   resetOrderCounter();
   resetTicketCounter();
+  resetScheduleCounter();
   state = buildInitialState();
 }
 
@@ -145,6 +181,13 @@ export const handlers = [
   http.delete(`${BASE}/stores/:id/products/:productId`, ({ params }) => {
     state.products = state.products.filter((p) => p.id !== params.productId);
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // ── Schedules ─────────────────────────────────────────────────────────────
+
+  http.get(`${BASE}/stores/:storeId/products/:productId/schedules`, ({ params }) => {
+    const schedules = state.schedules.filter((s) => s.product_id === params.productId);
+    return HttpResponse.json(schedules);
   }),
 
   // ── Orders ────────────────────────────────────────────────────────────────

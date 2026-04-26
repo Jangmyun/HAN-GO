@@ -4,14 +4,66 @@ import { ordersApi } from "@/lib/api";
 import { clearCart, getCart, getCartStoreId, removeFromCart } from "@/lib/cart";
 import type { CartItem } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+
+// ── Step Indicator ─────────────────────────────────────────────────────────────
+
+function StepIndicator({ current }: { current: number }) {
+  const steps = ["좌석선택", "주문확인", "결제"];
+  return (
+    <div style={{ display: "flex", alignItems: "center", padding: "14px 24px", background: "#fff", borderBottom: "1px solid #E5E7EB" }}>
+      {steps.map((step, i) => {
+        const done = i < current;
+        const active = i === current;
+        return (
+          <Fragment key={i}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 14,
+                background: done ? "#16A34A" : active ? "#4B5FFF" : "#E5E7EB",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: active ? "0 2px 8px rgba(75,95,255,0.30)" : "none",
+                transition: "all 0.2s",
+              }}>
+                {done ? (
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M2 6.5l3 3 6-6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#fff" : "#9CA3AF" }}>{i + 1}</span>
+                )}
+              </div>
+              <span style={{ fontSize: 10, color: active ? "#4B5FFF" : done ? "#16A34A" : "#9CA3AF", fontWeight: active ? 700 : 500, whiteSpace: "nowrap" }}>
+                {step}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div style={{
+                flex: 1, height: 2,
+                background: done ? "#16A34A" : "#E5E7EB",
+                marginBottom: 14, marginLeft: 4, marginRight: 4, borderRadius: 1,
+                transition: "background 0.3s",
+              }} />
+            )}
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function CartPage() {
   const router = useRouter();
   const [storeId, setStoreId] = useState<string | null>(null);
   const [items, setItems] = useState<CartItem[]>([]);
+  const [payMethod, setPayMethod] = useState<"kakao" | "bank">("kakao");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Check if all items are performance-type (have seat_keys)
+  const isPerformance = items.some((i) => i.seat_keys && i.seat_keys.length > 0);
 
   useEffect(() => {
     const sid = getCartStoreId();
@@ -53,15 +105,13 @@ export default function CartPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "#F9FAFB", minHeight: "100%" }}>
-      {/* 앱바 */}
-      <div
-        style={{
-          height: 52, background: "#fff",
-          display: "flex", alignItems: "center", padding: "0 8px 0 4px",
-          borderBottom: "1px solid #E5E7EB",
-          position: "sticky", top: 0, zIndex: 40, gap: 4,
-        }}
-      >
+      {/* AppBar */}
+      <div style={{
+        height: 52, background: "#fff",
+        display: "flex", alignItems: "center", padding: "0 8px 0 4px",
+        borderBottom: "1px solid #E5E7EB",
+        position: "sticky", top: 0, zIndex: 40, gap: 4,
+      }}>
         <button
           onClick={() => router.back()}
           style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", borderRadius: 10 }}
@@ -72,6 +122,9 @@ export default function CartPage() {
         </button>
         <span style={{ flex: 1, fontSize: 17, fontWeight: 700, color: "#111827", letterSpacing: -0.3 }}>주문 확인</span>
       </div>
+
+      {/* Step indicator — performance flow only */}
+      {isPerformance && <StepIndicator current={1} />}
 
       {items.length === 0 ? (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: "#6B7280" }}>
@@ -87,14 +140,12 @@ export default function CartPage() {
         <>
           <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
             {/* 주문 항목 */}
-            <div
-              style={{
-                background: "#fff", borderRadius: 16,
-                border: "1px solid #E5E7EB",
-                boxShadow: "0 1px 3px rgba(17,24,39,0.06)",
-                padding: "16px",
-              }}
-            >
+            <div style={{
+              background: "#fff", borderRadius: 16,
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 1px 3px rgba(17,24,39,0.06)",
+              padding: "16px",
+            }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 12 }}>주문 항목</div>
               {items.map((item, i) => (
                 <div
@@ -106,14 +157,12 @@ export default function CartPage() {
                     marginBottom: i < items.length - 1 ? 12 : 0,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 40, height: 40, borderRadius: 10,
-                      background: "#EEF0FF",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10,
+                    background: "#EEF0FF",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                       <rect x="3" y="3" width="12" height="12" rx="2" stroke="#4B5FFF" strokeWidth="1.4" fill="none"/>
                       <path d="M6 9l2 2 4-4" stroke="#4B5FFF" strokeWidth="1.4" strokeLinecap="round"/>
@@ -122,9 +171,13 @@ export default function CartPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{item.product_name}</div>
                     {item.seat_keys && item.seat_keys.length > 0 && (
-                      <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>좌석: {item.seat_keys.join(", ")}</div>
+                      <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
+                        {item.seat_keys.join(" · ")} · GENERAL
+                      </div>
                     )}
-                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>수량: {item.quantity}</div>
+                    {!item.seat_keys && (
+                      <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>수량: {item.quantity}</div>
+                    )}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
@@ -143,27 +196,57 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* 결제 수단 안내 */}
-            <div
-              style={{
-                background: "#F0F2FF", borderRadius: 14, padding: "14px 16px",
-                border: "1px solid #4B5FFF22",
-              }}
-            >
-              <div style={{ fontSize: 13, color: "#4B5FFF", fontWeight: 700, marginBottom: 6 }}>💡 결제 안내</div>
-              <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.7 }}>
-                주문 후 스토어의 카카오페이 또는 계좌로 직접 입금해주세요.<br/>
-                입금자명에 <strong>주문 번호</strong>를 반드시 입력해주세요.
+            {/* 결제 수단 선택 */}
+            <div style={{
+              background: "#fff", borderRadius: 16,
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 1px 3px rgba(17,24,39,0.06)",
+              padding: "16px",
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 12 }}>결제 수단</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {([
+                  { id: "kakao" as const, label: "카카오페이 송금", sub: "송금 링크로 이동" },
+                  { id: "bank" as const, label: "계좌이체", sub: "입금자명 = 주문번호" },
+                ]).map((m) => {
+                  const active = payMethod === m.id;
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => setPayMethod(m.id)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 12,
+                        padding: "12px 14px", borderRadius: 12,
+                        border: `1.5px solid ${active ? "#4B5FFF" : "#E5E7EB"}`,
+                        background: active ? "#EEF0FF66" : "#fff",
+                        cursor: "pointer", userSelect: "none",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <div style={{
+                        width: 20, height: 20, borderRadius: 10,
+                        border: `2px solid ${active ? "#4B5FFF" : "#E5E7EB"}`,
+                        background: active ? "#4B5FFF" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        {active && <div style={{ width: 8, height: 8, borderRadius: 4, background: "#fff" }} />}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? "#111827" : "#6B7280" }}>{m.label}</div>
+                        <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>{m.sub}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* 취소 정책 */}
-            <div
-              style={{
-                background: "#F9FAFB", borderRadius: 12, padding: "12px 14px",
-                border: "1px solid #E5E7EB", fontSize: 12, color: "#6B7280", lineHeight: 1.7,
-              }}
-            >
+            <div style={{
+              background: "#F9FAFB", borderRadius: 12, padding: "12px 14px",
+              border: "1px solid #E5E7EB", fontSize: 12, color: "#6B7280", lineHeight: 1.7,
+            }}>
               ⚠️ 공연 시작 전까지 취소 요청이 가능합니다. 환불은 스토어 운영자가 직접 처리합니다.
             </div>
 
@@ -172,7 +255,7 @@ export default function CartPage() {
                 {error}
               </div>
             )}
-            <div style={{ height: 8 }}/>
+            <div style={{ height: 8 }} />
           </div>
 
           {/* 합계 + 주문 CTA */}
@@ -194,6 +277,7 @@ export default function CartPage() {
                 fontSize: 15, fontWeight: 700,
                 cursor: submitting ? "default" : "pointer",
                 boxShadow: submitting ? "none" : "0 2px 8px rgba(75,95,255,0.30)",
+                transition: "all 0.15s",
               }}
             >
               {submitting ? "주문 처리 중..." : "결제 진행하기"}
