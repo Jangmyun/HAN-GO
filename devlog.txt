@@ -3,6 +3,40 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-26] P1b 디자인 파일 기준 주문·결제·QR 플로우 UI 재설계 (branch: design/p1b-redesign)
+
+변경 파일:
+- frontend/app/(user)/orders/page.tsx: 주문 내역 목록 디자인 (상태 배지, 금액 강조, 카드 행 레이아웃)
+- frontend/app/(user)/orders/[orderId]/page.tsx: 상태 헤더(아이콘+설명+주문코드 pill), 결제 안내(주문번호 카드+카카오페이+계좌이체), 진행 타임라인, QR CTA
+- frontend/app/(user)/cart/page.tsx: 주문 확인 레이아웃 (항목 카드, 결제 안내 박스, 합계+CTA)
+- frontend/app/(user)/tickets/[ticketId]/page.tsx: 다크 배경 전체화면, 물리 티켓 카드(그라디언트 헤더+절취선+QR), 상태 배지
+- frontend/app/(user)/orders/guest/page.tsx: 비회원 주문 조회 디자인 (인풋 포커스 스타일, CTA 버튼, 안내 박스)
+
+주요 결정사항:
+- QRTicket 컴포넌트(components/hango/QRTicket.tsx)는 유지하되, /tickets/[ticketId]/page.tsx에서 직접 QRCodeSVG로 렌더링하도록 교체하여 디자인 파일의 물리 티켓 형태를 충실히 구현
+- 결제 안내는 카카오페이 버튼과 계좌이체를 모두 지원, ordersApi.paymentSubmit() 단일 호출로 연결
+
+-------------------------------------------------------------------------------
+[2026-04-26] P1a 디자인 파일 기준 전체 UI 재설계 (branch: design/p1a-redesign)
+
+변경 파일:
+- frontend/components/hango/BottomNav.tsx: SVG 아이콘으로 교체, 활성 탭 dot 인디케이터 추가, 레이블 수정(주문내역/마이페이지)
+- frontend/components/hango/StoreCard.tsx: 수직 카드 → 수평 행 레이아웃 (56px 타입 아이콘 + 텍스트 + 화살표)
+- frontend/app/(user)/page.tsx: 로고/검색필/알림 헤더, 히어로 배너(그라디언트+장식원), 이벤트 가로 스크롤, 스토어 행 목록
+- frontend/app/(user)/auth/page.tsx: 중앙 로고 섹션(220px), 카카오 버튼, 비회원 outline 버튼 (전화번호 입력 분리)
+- frontend/app/(user)/auth/guest/page.tsx: 신규 — 비회원 전화번호 입력 페이지 (체크박스 동의, 안내박스, CTA)
+- frontend/app/(user)/explore/page.tsx: 필터 칩(전체/공연/음식/굿즈/이벤트), 이벤트 섹션, 2열 스토어 그리드
+- frontend/app/(user)/stores/[slug]/page.tsx: 히어로 이미지+그라디언트 오버레이, 메타 행(위치/시간/결제), 탭 UI, CTA 버튼
+- frontend/app/(user)/me/page.tsx: 그라디언트 아바타 프로필 카드, 주문 현황 3칸, 최근 주문+QR버튼, 메뉴 목록
+- frontend/lib/types.ts: StoreResponse에 type(StoreType) 필드 추가
+- frontend/mocks/fixtures/store.factory.ts: type: "FOOD" 기본값 추가
+
+주요 결정사항:
+- 디자인 토큰과 Tailwind CSS 기존 설정은 이미 일치(#4B5FFF, #F5670A, Pretendard)하여 그대로 유지
+- 인라인 style prop 사용 — 디자인 파일의 수치값(px, opacity, border-radius)을 Tailwind 클래스보다 정밀하게 반영 가능
+- 비회원 로그인 흐름: /auth (버튼만) → /auth/guest (전화번호 입력) 2단계로 분리, 디자인 의도에 맞춤
+
+-------------------------------------------------------------------------------
 [2026-04-26] MSW MockProvider 타이밍 버그 수정
 
 변경 파일:

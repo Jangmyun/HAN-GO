@@ -1,12 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { ordersApi } from "@/lib/api";
-import { clearCart, getCart, getCartStoreId, getCartTotal, removeFromCart } from "@/lib/cart";
+import { clearCart, getCart, getCartStoreId, removeFromCart } from "@/lib/cart";
 import type { CartItem } from "@/lib/types";
-import { ChevronLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -56,73 +52,155 @@ export default function CartPage() {
   };
 
   return (
-    <div>
-      <header className="sticky top-0 z-40 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.back()} className="p-1 rounded-full hover:bg-muted">
-          <ChevronLeft className="w-5 h-5" />
+    <div style={{ display: "flex", flexDirection: "column", background: "#F9FAFB", minHeight: "100%" }}>
+      {/* 앱바 */}
+      <div
+        style={{
+          height: 52, background: "#fff",
+          display: "flex", alignItems: "center", padding: "0 8px 0 4px",
+          borderBottom: "1px solid #E5E7EB",
+          position: "sticky", top: 0, zIndex: 40, gap: 4,
+        }}
+      >
+        <button
+          onClick={() => router.back()}
+          style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", borderRadius: 10 }}
+        >
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M14 4L7 11l7 7" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
-        <span className="font-bold">장바구니</span>
-      </header>
+        <span style={{ flex: 1, fontSize: 17, fontWeight: 700, color: "#111827", letterSpacing: -0.3 }}>주문 확인</span>
+      </div>
 
-      <div className="p-4 space-y-4">
-        {items.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-sm">장바구니가 비어 있습니다.</p>
-            <button onClick={() => router.push("/")} className="text-sm text-primary underline mt-2 block mx-auto">
-              스토어 보러 가기
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* 상품 목록 */}
-            <Card className="p-4 space-y-3">
+      {items.length === 0 ? (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: "#6B7280" }}>
+          <p style={{ fontSize: 14 }}>장바구니가 비어 있습니다.</p>
+          <button
+            onClick={() => router.push("/")}
+            style={{ fontSize: 14, color: "#4B5FFF", textDecoration: "underline", background: "transparent", border: "none", cursor: "pointer" }}
+          >
+            스토어 보러 가기
+          </button>
+        </div>
+      ) : (
+        <>
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
+            {/* 주문 항목 */}
+            <div
+              style={{
+                background: "#fff", borderRadius: 16,
+                border: "1px solid #E5E7EB",
+                boxShadow: "0 1px 3px rgba(17,24,39,0.06)",
+                padding: "16px",
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 12 }}>주문 항목</div>
               {items.map((item, i) => (
-                <div key={`${item.product_id}-${i}`}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{item.product_name}</p>
-                      {item.seat_keys && (
-                        <p className="text-xs text-muted-foreground">좌석: {item.seat_keys.join(", ")}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground">수량: {item.quantity}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">{item.subtotal.toLocaleString()}원</span>
-                      <button onClick={() => handleRemove(item.product_id)} className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                <div
+                  key={`${item.product_id}-${i}`}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    paddingBottom: i < items.length - 1 ? 12 : 0,
+                    borderBottom: i < items.length - 1 ? "1px solid #F3F4F6" : "none",
+                    marginBottom: i < items.length - 1 ? 12 : 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40, height: 40, borderRadius: 10,
+                      background: "#EEF0FF",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <rect x="3" y="3" width="12" height="12" rx="2" stroke="#4B5FFF" strokeWidth="1.4" fill="none"/>
+                      <path d="M6 9l2 2 4-4" stroke="#4B5FFF" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
                   </div>
-                  {i < items.length - 1 && <Separator className="mt-3" />}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{item.product_name}</div>
+                    {item.seat_keys && item.seat_keys.length > 0 && (
+                      <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>좌석: {item.seat_keys.join(", ")}</div>
+                    )}
+                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>수량: {item.quantity}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+                      ₩{item.subtotal.toLocaleString()}
+                    </span>
+                    <button
+                      onClick={() => handleRemove(item.product_id)}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: "#9CA3AF" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
-            </Card>
+            </div>
 
-            {/* 주문 안내 */}
-            <Card className="p-4 bg-primary/5 border-primary/20">
-              <p className="text-xs text-muted-foreground font-medium mb-2">결제 안내</p>
-              <p className="text-xs text-muted-foreground">
-                주문 후 스토어의 계좌 또는 카카오페이로 직접 입금해주세요.
+            {/* 결제 수단 안내 */}
+            <div
+              style={{
+                background: "#F0F2FF", borderRadius: 14, padding: "14px 16px",
+                border: "1px solid #4B5FFF22",
+              }}
+            >
+              <div style={{ fontSize: 13, color: "#4B5FFF", fontWeight: 700, marginBottom: 6 }}>💡 결제 안내</div>
+              <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.7 }}>
+                주문 후 스토어의 카카오페이 또는 계좌로 직접 입금해주세요.<br/>
                 입금자명에 <strong>주문 번호</strong>를 반드시 입력해주세요.
-              </p>
-            </Card>
-
-            {/* 합계 */}
-            <Card className="p-4">
-              <div className="flex justify-between font-bold text-base">
-                <span>합계</span>
-                <span className="text-primary">{total.toLocaleString()}원</span>
               </div>
-            </Card>
+            </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {/* 취소 정책 */}
+            <div
+              style={{
+                background: "#F9FAFB", borderRadius: 12, padding: "12px 14px",
+                border: "1px solid #E5E7EB", fontSize: 12, color: "#6B7280", lineHeight: 1.7,
+              }}
+            >
+              ⚠️ 공연 시작 전까지 취소 요청이 가능합니다. 환불은 스토어 운영자가 직접 처리합니다.
+            </div>
 
-            <Button className="w-full" size="lg" onClick={handleCheckout} disabled={submitting}>
-              {submitting ? "주문 처리 중..." : "주문하기"}
-            </Button>
-          </>
-        )}
-      </div>
+            {error && (
+              <div style={{ fontSize: 13, color: "#DC2626", background: "#FEE2E2", borderRadius: 10, padding: "12px 16px" }}>
+                {error}
+              </div>
+            )}
+            <div style={{ height: 8 }}/>
+          </div>
+
+          {/* 합계 + 주문 CTA */}
+          <div style={{ padding: "14px 16px 32px", background: "#fff", borderTop: "1px solid #E5E7EB", flexShrink: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <span style={{ fontSize: 14, color: "#6B7280" }}>최종 결제금액</span>
+              <span style={{ fontSize: 22, fontWeight: 900, color: "#111827", letterSpacing: -0.8 }}>
+                ₩{total.toLocaleString()}
+              </span>
+            </div>
+            <button
+              onClick={handleCheckout}
+              disabled={submitting}
+              style={{
+                width: "100%", height: 54,
+                background: submitting ? "#E5E7EB" : "#4B5FFF",
+                color: submitting ? "#9CA3AF" : "#fff",
+                border: "none", borderRadius: 14,
+                fontSize: 15, fontWeight: 700,
+                cursor: submitting ? "default" : "pointer",
+                boxShadow: submitting ? "none" : "0 2px 8px rgba(75,95,255,0.30)",
+              }}
+            >
+              {submitting ? "주문 처리 중..." : "결제 진행하기"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

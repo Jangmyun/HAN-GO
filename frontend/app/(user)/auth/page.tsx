@@ -1,13 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { authApi } from "@/lib/api";
-import { setToken } from "@/lib/auth";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import Link from "next/link";
 
 const KAKAO_AUTH_URL =
   `https://kauth.kakao.com/oauth/authorize?` +
@@ -16,84 +9,115 @@ const KAKAO_AUTH_URL =
   `response_type=code`;
 
 export default function AuthPage() {
-  const router = useRouter();
-  const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleGuestLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await authApi.guestLogin(phone);
-      setToken(res.access_token, "guest", { user_id: res.user_id });
-      router.push("/");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "로그인 실패. 전화번호를 확인해주세요.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* 헤더 */}
-      <div className="bg-gradient-to-br from-primary to-[#7B8BFF] px-6 pt-16 pb-10 text-white">
-        <h1 className="font-extrabold text-3xl tracking-tight">HAN:GO</h1>
-        <p className="text-white/80 mt-1 text-sm">한동대 주문·결제·예매 플랫폼</p>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", background: "#fff" }}>
+      {/* 상단 그라디언트 장식 */}
+      <div
+        style={{
+          position: "relative",
+          height: 220,
+          background: "linear-gradient(160deg, #F0F2FF 0%, #fff 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: 100, background: "#4B5FFF0C" }}/>
+        <div style={{ position: "absolute", bottom: -20, left: -30, width: 140, height: 140, borderRadius: 70, background: "#F5670A0A" }}/>
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+          <div
+            style={{
+              width: 72, height: 72,
+              background: "#4B5FFF",
+              borderRadius: 22,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 20px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06)",
+              marginBottom: 16,
+            }}
+          >
+            <span style={{ fontSize: 32, fontWeight: 900, color: "#fff", letterSpacing: -2 }}>H</span>
+          </div>
+          <div style={{ fontSize: 30, fontWeight: 900, color: "#111827", letterSpacing: -1.5 }}>
+            HAN<span style={{ color: "#4B5FFF" }}>:</span>GO
+          </div>
+          <div style={{ fontSize: 14, color: "#6B7280", marginTop: 6, lineHeight: 1.5 }}>
+            한동대 주문·결제·예매 플랫폼
+          </div>
+        </div>
       </div>
 
-      <div className="flex-1 p-6 space-y-6">
+      {/* 버튼 영역 */}
+      <div style={{ flex: 1, padding: "32px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
         {/* 카카오 로그인 */}
-        <div>
-          <a href={KAKAO_AUTH_URL}>
-            <Button
-              className="w-full font-semibold text-sm"
-              style={{ backgroundColor: "#FEE500", color: "#191919" }}
-            >
-              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.67 1.6 5.02 4 6.47L5 21l4.67-2.47C10.42 18.82 11.2 19 12 19c5.52 0 10-3.48 10-7.8S17.52 3 12 3z" />
-              </svg>
-              카카오로 시작하기
-            </Button>
-          </a>
+        <a href={KAKAO_AUTH_URL}>
+          <button
+            style={{
+              width: "100%", height: 54,
+              background: "#FEE500",
+              border: "none", borderRadius: 14,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(254,229,0,0.4)",
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M11 2.5C6.3 2.5 2.5 5.6 2.5 9.4c0 2.5 1.7 4.7 4.2 5.9l-1 3.6 4-2.6c.4.05.85.1 1.3.1 4.7 0 8.5-3.1 8.5-6.9S15.7 2.5 11 2.5z" fill="#3C1E1E"/>
+            </svg>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#3C1E1E", letterSpacing: -0.3 }}>
+              카카오로 로그인
+            </span>
+          </button>
+        </a>
+
+        {/* 구분선 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1, height: 1, background: "#E5E7EB" }}/>
+          <span style={{ fontSize: 12, color: "#6B7280" }}>또는</span>
+          <div style={{ flex: 1, height: 1, background: "#E5E7EB" }}/>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground">또는</span>
-          <Separator className="flex-1" />
+        {/* 비회원 주문 */}
+        <Link href="/auth/guest" style={{ display: "block" }}>
+          <button
+            style={{
+              width: "100%", height: 54,
+              background: "transparent",
+              border: "1.5px solid #4B5FFF",
+              borderRadius: 14,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+              fontSize: 15, fontWeight: 700, color: "#4B5FFF",
+              letterSpacing: -0.3,
+            }}
+          >
+            비회원으로 주문하기
+          </button>
+        </Link>
+
+        <div style={{ textAlign: "center", marginTop: 4 }}>
+          <span style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
+            로그인 시{" "}
+            <span style={{ color: "#4B5FFF", cursor: "pointer" }}>이용약관</span>
+            {" "}및{" "}
+            <span style={{ color: "#4B5FFF", cursor: "pointer" }}>개인정보처리방침</span>에 동의합니다
+          </span>
         </div>
 
-        {/* 비회원 로그인 */}
-        <form onSubmit={handleGuestLogin} className="space-y-3">
-          <p className="font-semibold text-sm">비회원으로 주문하기</p>
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-sm">전화번호</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="010-0000-0000"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-xs text-destructive">{error}</p>}
-          <Button type="submit" variant="outline" className="w-full" disabled={loading}>
-            {loading ? "확인 중..." : "비회원으로 계속하기"}
-          </Button>
-        </form>
-
-        <Separator />
-
-        {/* 비회원 주문 조회 */}
-        <div className="text-center">
-          <a href="/orders/guest" className="text-sm text-primary underline underline-offset-2">
-            비회원 주문 조회
-          </a>
+        {/* 비회원 조회 링크 */}
+        <div style={{ textAlign: "center", marginTop: 8 }}>
+          <Link href="/orders/guest">
+            <span style={{ fontSize: 13, color: "#6B7280", textDecoration: "underline", cursor: "pointer" }}>
+              비회원 주문 조회
+            </span>
+          </Link>
         </div>
+      </div>
+
+      <div style={{ textAlign: "center", padding: "0 0 24px", flexShrink: 0 }}>
+        <span style={{ fontSize: 11, color: "#E5E7EB" }}>Built by CRA @ Handong University</span>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ export function createStore(overrides: Partial<StoreResponse> = {}): StoreRespon
     id,
     name: `테스트 부스 ${id}`,
     slug: `test-booth-${id}`,
+    type: "FOOD",
     location: "한동대학교 운동장 A구역",
     opening_hours: "10:00 - 18:00",
     description: "테스트용 부스입니다.",
