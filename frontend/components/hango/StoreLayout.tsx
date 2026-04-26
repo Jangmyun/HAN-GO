@@ -1,15 +1,17 @@
 "use client";
 
 import { clearToken } from "@/lib/auth";
-import { BarChart3, LogOut, Package, QrCode, ShoppingCart, Store } from "lucide-react";
+import { BarChart3, ChefHat, Layers, LogOut, Package, QrCode, ShoppingCart, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/store/dashboard", label: "대시보드", Icon: BarChart3 },
-  { href: "/store/products", label: "상품 관리", Icon: Package },
-  { href: "/store/orders", label: "주문 관리", Icon: ShoppingCart },
-  { href: "/store/scanner", label: "QR 스캐너", Icon: QrCode },
+  { href: "/store/dashboard", label: "대시보드",   Icon: BarChart3 },
+  { href: "/store/products",  label: "상품 관리",   Icon: Package },
+  { href: "/store/inventory", label: "재고 관리",   Icon: Layers },
+  { href: "/store/kitchen",   label: "주방 디스플레이", Icon: ChefHat },
+  { href: "/store/orders",    label: "주문 관리",   Icon: ShoppingCart },
+  { href: "/store/scanner",   label: "QR 스캐너",   Icon: QrCode },
 ];
 
 interface Props {

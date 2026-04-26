@@ -3,6 +3,26 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-26] P1c 디자인 구현 — FOOD 옵션 UI, 주방 디스플레이, QR 스캐너, 좌석 편집기, 재고 관리
+
+변경 파일:
+- frontend/app/(user)/stores/[slug]/products/[productId]/page.tsx: FOOD 상세 페이지 옵션 UI 구현 (select 라디오 그리드, boolean 체크박스, 수량 조절, 합계, 이중 CTA)
+- frontend/app/(user)/orders/[orderId]/page.tsx: FOOD 조리중/픽업 가능 상태에 대기 번호 표시, 전용 타임라인 추가
+- frontend/app/(store)/store/scanner/page.tsx: 다크 테마 QR 스캐너 재설계 (카메라 배경, 코너 마커, 스캔 라인 애니메이션, ok/used/fail 결과 카드)
+- frontend/app/(store)/store/kitchen/page.tsx: 신규 — FOOD 주방 Kanban 디스플레이 (접수됨→조리중→준비완료, 인터랙티브 상태 전환)
+- frontend/app/(store)/store/inventory/page.tsx: 신규 — 재고 관리 테이블 (타입/모드 필터, 재고 프로그레스 바, 저재고 경고)
+- frontend/app/(store)/store/products/[productId]/seat-editor/page.tsx: 신규 — 좌석 레이아웃 편집기 (8×12 그리드, 4가지 편집 도구, 티어 가격 설정, 좌석 현황 요약)
+- frontend/components/hango/StoreLayout.tsx: 재고 관리, 주방 디스플레이 네비게이션 항목 추가
+- frontend/mocks/handlers.ts: 부대찌개 세트 상품 추가 (맵기 select 옵션, 계란/공기밥 boolean 옵션)
+
+주요 결정사항:
+- FOOD 옵션 UI: option_schema 기반으로 동적 렌더링 (select→라디오 그리드, boolean→체크박스)
+- 대기 번호: order.id 해시로 100–999 범위 결정론적 생성 (실제 서버 필드 추가 전 임시)
+- QR 스캐너: 전체 화면 고정(position: fixed)으로 StoreLayout 사이드바 위에 오버레이
+- 좌석 편집기: 마우스 드래그로 다중 셀 편집 지원 (isDrawing state)
+- 주방 Kanban: 로컬 state로 카드 이동 시뮬레이션 (MSW 연동 없이 단독 동작)
+
+-------------------------------------------------------------------------------
 [2026-04-26] 공연 예매 플로우 구현 — 좌석 선택 + 주문 확인 (P1b 디자인 적용)
 
 변경 파일:

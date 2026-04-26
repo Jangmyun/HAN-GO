@@ -443,8 +443,69 @@ export default function ProductDetailPage() {
   }
 
   // ── FOOD / MERCH 상품 상세 ─────────────────────────────────────────────────
+  return <FoodProductDetail store={store} product={product} router={router} />;
+}
+
+// ── FOOD/MERCH 상세 컴포넌트 ───────────────────────────────────────────────────
+function FoodProductDetail({
+  store,
+  product,
+  router,
+}: {
+  store: StoreResponse;
+  product: ProductResponse;
+  router: ReturnType<typeof useRouter>;
+}) {
+  // 옵션 상태 (select → 선택값 string, boolean → "true"/"false")
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const f of product.option_schema) {
+      if (f.type === "select" && f.values && f.values.length > 0) init[f.key] = f.values[0];
+      if (f.type === "boolean") init[f.key] = "false";
+    }
+    return init;
+  });
+  const [qty, setQty] = useState(1);
+  const [cartError, setCartError] = useState("");
+
+  const selectFields = product.option_schema.filter((f) => f.type === "select");
+  const boolFields   = product.option_schema.filter((f) => f.type === "boolean");
+
+  const extraTotal = product.option_schema.reduce((sum, f) => {
+    if (f.type === "boolean" && selectedOptions[f.key] === "true") return sum + f.price_delta;
+    return sum;
+  }, 0);
+  const unitPrice = product.base_price + extraTotal;
+  const total     = unitPrice * qty;
+
+  const handleAddToCart = () => {
+    setCartError("");
+    const result = addToCart(store.id, {
+      product_id: product.id,
+      product_name: product.name,
+      quantity: qty,
+      selected_options: selectedOptions,
+      unit_price: unitPrice,
+      subtotal: total,
+    });
+    if (result === "store_mismatch") {
+      if (confirm("다른 스토어의 상품이 장바구니에 있습니다. 초기화할까요?")) {
+        clearCart();
+        addToCart(store.id, {
+          product_id: product.id,
+          product_name: product.name,
+          quantity: qty,
+          selected_options: selectedOptions,
+          unit_price: unitPrice,
+          subtotal: total,
+        });
+      } else return;
+    }
+    router.push("/cart");
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", background: "#F9FAFB", minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", background: "#F9FAFB", minHeight: "100%", height: "100%" }}>
       {/* AppBar */}
       <div style={{
         height: 52, background: "#fff",
@@ -463,48 +524,173 @@ export default function ProductDetailPage() {
         <span style={{ fontSize: 17, fontWeight: 700, color: "#111827", letterSpacing: -0.3 }}>{product.name}</span>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-        {/* 상품 정보 카드 */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* 상품 이미지 플레이스홀더 */}
         <div style={{
-          background: "#fff", borderRadius: 16, border: "1px solid #E5E7EB",
-          boxShadow: "0 1px 3px rgba(17,24,39,0.06)", padding: "18px 16px",
+          height: 200, background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", letterSpacing: -0.6, marginBottom: 6 }}>
-            {product.name}
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <rect x="4" y="16" width="48" height="30" rx="4" stroke="#C2410C" strokeWidth="2" fill="#FFF7ED"/>
+            <path d="M12 24h32M12 32h20" stroke="#C2410C" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+
+        {/* 상품명 + 기본 정보 */}
+        <div style={{ padding: "18px 18px 14px", background: "#fff", borderBottom: "1px solid #F3F4F6" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#111827", letterSpacing: -0.6, lineHeight: 1.2 }}>{product.name}</div>
+              {product.description && (
+                <div style={{ fontSize: 13, color: "#6B7280", marginTop: 4, lineHeight: 1.6 }}>{product.description}</div>
+              )}
+            </div>
+            <div style={{ flexShrink: 0, textAlign: "right" }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "#111827", letterSpacing: -0.8 }}>₩{product.base_price.toLocaleString()}</div>
+              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>기본가</div>
+            </div>
           </div>
-          {product.description && (
-            <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, marginBottom: 12 }}>
-              {product.description}
+          {product.stock !== undefined && product.stock_mode === "tracked" && (
+            <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" as const }}>
+              <span style={{ fontSize: 11, color: product.stock > 10 ? "#16A34A" : "#DC2626", background: product.stock > 10 ? "#F0FDF4" : "#FEF2F2", borderRadius: 20, padding: "3px 10px", fontWeight: 600, border: `1px solid ${product.stock > 10 ? "#BBF7D0" : "#FECACA"}` }}>
+                재고 잔여 {product.stock}
+              </span>
             </div>
           )}
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#4B5FFF", letterSpacing: -0.5 }}>
-            {product.base_price.toLocaleString()}원
+        </div>
+
+        {/* Select 옵션들 */}
+        {selectFields.map((field) => (
+          <div key={field.key} style={{ padding: "16px 18px 14px", background: "#fff", borderBottom: "1px solid #F3F4F6" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{field.label}</span>
+              {field.required && <span style={{ fontSize: 11, color: "#DC2626", fontWeight: 600 }}>필수 선택</span>}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {(field.values ?? []).map((opt) => {
+                const active = selectedOptions[field.key] === opt;
+                return (
+                  <button
+                    key={opt}
+                    onClick={() => setSelectedOptions((prev) => ({ ...prev, [field.key]: opt }))}
+                    style={{
+                      padding: "11px 14px", borderRadius: 12,
+                      border: `1.5px solid ${active ? "#4B5FFF" : "#E5E7EB"}`,
+                      background: active ? "#EEF0FF" : "transparent",
+                      display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                      transition: "all 0.12s", userSelect: "none" as const,
+                    }}
+                  >
+                    <div style={{
+                      width: 16, height: 16, borderRadius: 8,
+                      border: `2px solid ${active ? "#4B5FFF" : "#D1D5DB"}`,
+                      background: active ? "#4B5FFF" : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      {active && <div style={{ width: 6, height: 6, borderRadius: 3, background: "#fff" }} />}
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? "#4B5FFF" : "#374151" }}>{opt}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Boolean 옵션들 (추가 선택) */}
+        {boolFields.length > 0 && (
+          <div style={{ padding: "16px 18px 14px", background: "#fff", borderBottom: "1px solid #F3F4F6" }}>
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>추가 선택</span>
+              <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 8 }}>선택 사항</span>
+            </div>
+            {boolFields.map((field) => {
+              const checked = selectedOptions[field.key] === "true";
+              return (
+                <div
+                  key={field.key}
+                  onClick={() => setSelectedOptions((prev) => ({ ...prev, [field.key]: checked ? "false" : "true" }))}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+                    borderRadius: 12,
+                    border: `1.5px solid ${checked ? "#4B5FFF" : "#E5E7EB"}`,
+                    background: checked ? "#EEF0FF44" : "transparent",
+                    marginBottom: 8, cursor: "pointer", transition: "all 0.12s",
+                    userSelect: "none" as const,
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: checked ? 700 : 500, color: checked ? "#111827" : "#374151" }}>{field.label}</div>
+                  </div>
+                  {field.price_delta > 0 && (
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#4B5FFF" }}>+₩{field.price_delta.toLocaleString()}</span>
+                  )}
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6,
+                    background: checked ? "#4B5FFF" : "#F9FAFB",
+                    border: `1.5px solid ${checked ? "#4B5FFF" : "#E5E7EB"}`,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    {checked && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l2.5 2.5 5-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 수량 */}
+        <div style={{ padding: "14px 18px 20px", background: "#fff" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>수량</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 10 }}>
+            <button
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              style={{ width: 38, height: 38, borderRadius: 12, border: "1.5px solid #E5E7EB", background: "#F9FAFB", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h10" stroke="#111827" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <span style={{ fontSize: 20, fontWeight: 800, color: "#111827", minWidth: 28, textAlign: "center" }}>{qty}</span>
+            <button
+              onClick={() => setQty((q) => q + 1)}
+              style={{ width: 38, height: 38, borderRadius: 12, border: "1.5px solid #E5E7EB", background: "#F9FAFB", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3v10M3 8h10" stroke="#111827" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <div style={{ marginLeft: "auto", textAlign: "right" }}>
+              <div style={{ fontSize: 11, color: "#9CA3AF" }}>합계</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#111827", letterSpacing: -0.5 }}>₩{total.toLocaleString()}</div>
+            </div>
           </div>
         </div>
 
-        {error && (
-          <div style={{ fontSize: 13, color: "#DC2626", background: "#FEE2E2", borderRadius: 10, padding: "12px 16px" }}>
-            {error}
+        {cartError && (
+          <div style={{ margin: "0 18px 16px", fontSize: 13, color: "#DC2626", background: "#FEE2E2", borderRadius: 10, padding: "12px 16px" }}>
+            {cartError}
           </div>
         )}
-        <div style={{ height: 80 }} />
+        <div style={{ height: 8 }} />
       </div>
 
       {/* 하단 CTA */}
-      <div style={{
-        padding: "12px 16px 28px", background: "#fff",
-        borderTop: "1px solid #E5E7EB", flexShrink: 0,
-      }}>
+      <div style={{ padding: "12px 18px 32px", borderTop: "1px solid #E5E7EB", background: "#fff", flexShrink: 0, display: "flex", gap: 10 }}>
         <button
           onClick={() => {
-            if (!store) return;
+            setCartError("");
             const result = addToCart(store.id, {
               product_id: product.id,
               product_name: product.name,
-              quantity: 1,
-              selected_options: {},
-              unit_price: product.base_price,
-              subtotal: product.base_price,
+              quantity: qty,
+              selected_options: selectedOptions,
+              unit_price: unitPrice,
+              subtotal: total,
             });
             if (result === "store_mismatch") {
               if (confirm("다른 스토어의 상품이 장바구니에 있습니다. 초기화할까요?")) {
@@ -512,24 +698,31 @@ export default function ProductDetailPage() {
                 addToCart(store.id, {
                   product_id: product.id,
                   product_name: product.name,
-                  quantity: 1,
-                  selected_options: {},
-                  unit_price: product.base_price,
-                  subtotal: product.base_price,
+                  quantity: qty,
+                  selected_options: selectedOptions,
+                  unit_price: unitPrice,
+                  subtotal: total,
                 });
               } else return;
             }
-            router.push("/cart");
           }}
+          style={{ width: 48, height: 50, borderRadius: 14, border: "1.5px solid #E5E7EB", background: "#F9FAFB", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+        >
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M3 6h16l-1.5 9H4.5L3 6z" stroke="#111827" strokeWidth="1.6" strokeLinejoin="round"/>
+            <circle cx="8" cy="18" r="1.5" fill="#111827"/>
+            <circle cx="15" cy="18" r="1.5" fill="#111827"/>
+          </svg>
+        </button>
+        <button
+          onClick={handleAddToCart}
           style={{
-            width: "100%", height: 54,
-            background: "#4B5FFF", color: "#fff",
-            border: "none", borderRadius: 14,
-            fontSize: 15, fontWeight: 700, cursor: "pointer",
+            flex: 1, height: 50, background: "#4B5FFF", color: "#fff",
+            border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer",
             boxShadow: "0 2px 8px rgba(75,95,255,0.30)",
           }}
         >
-          장바구니 담기
+          담기 — ₩{total.toLocaleString()}
         </button>
       </div>
     </div>

@@ -29,6 +29,123 @@ const TIMELINE_STEPS = [
   { status: "completed" as OrderStatus,         label: "수령 완료" },
 ];
 
+const FOOD_TIMELINE_STEPS = [
+  { status: "paid" as OrderStatus,              label: "결제 확인" },
+  { status: "preparing" as OrderStatus,         label: "조리 중" },
+  { status: "ready" as OrderStatus,             label: "픽업 가능" },
+  { status: "completed" as OrderStatus,         label: "수령 완료" },
+];
+
+const FOOD_STATUS_ORDER: OrderStatus[] = ["paid", "preparing", "ready", "completed"];
+
+function deriveWaitingNumber(orderId: string): number {
+  let hash = 0;
+  for (let i = 0; i < orderId.length; i++) hash = (hash * 31 + orderId.charCodeAt(i)) & 0xffff;
+  return (hash % 900) + 100; // 100–999
+}
+
+function FoodStatusHero({ order }: { order: OrderResponse }) {
+  const isReady = order.status === "ready";
+  const isPreparing = order.status === "preparing";
+  if (!isPreparing && !isReady) return null;
+
+  const waitNum = deriveWaitingNumber(order.id);
+  const statusIdx = FOOD_STATUS_ORDER.indexOf(order.status);
+
+  return (
+    <>
+      {/* 상태 히어로 */}
+      <div style={{
+        background: "#fff", borderRadius: 20, padding: "24px 20px",
+        border: "1px solid #E5E7EB", boxShadow: "0 1px 3px rgba(17,24,39,0.06)",
+        textAlign: "center", position: "relative" as const, overflow: "hidden",
+      }}>
+        {isReady && (
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, rgba(22,163,74,0.09) 0%, transparent 70%)" }} />
+        )}
+        <div style={{
+          width: 72, height: 72, borderRadius: 36,
+          background: isReady ? "#F0FDF4" : "#FEF3C7",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          marginBottom: 16,
+          boxShadow: `0 0 0 12px ${isReady ? "rgba(22,163,74,0.05)" : "rgba(245,158,11,0.05)"}`,
+        }}>
+          {isReady ? (
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M6 16l6 6 14-14" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M8 8h16v2c0 6-3 10-8 12-5-2-8-6-8-12V8z" stroke="#F59E0B" strokeWidth="2" strokeLinejoin="round" fill="none"/>
+              <path d="M12 14l2.5 2.5 5-5" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          )}
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#111827", letterSpacing: -0.6, marginBottom: 6 }}>
+          {isReady ? "픽업 가능합니다! 🎉" : "조리 중입니다"}
+        </div>
+        <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7 }}>
+          {isReady ? "카운터에서 아래 번호를 말씀해 주세요." : "잠시만 기다려주세요. 완료되면 알림을 드립니다."}
+        </div>
+        {/* 대기 번호 */}
+        <div style={{
+          marginTop: 18, padding: "14px 24px",
+          background: isReady ? "#F0FDF4" : "#FEF3C7",
+          borderRadius: 14, display: "inline-block",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: isReady ? "#16A34A" : "#D97706", marginBottom: 2 }}>대기 번호</div>
+          <div style={{ fontSize: 44, fontWeight: 900, color: isReady ? "#16A34A" : "#D97706", fontFamily: "ui-monospace,monospace", letterSpacing: -1 }}>
+            {String(waitNum).padStart(3, "0")}
+          </div>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <span style={{
+            fontSize: 12, color: "#9CA3AF", fontFamily: "ui-monospace,monospace",
+            background: "#F9FAFB", borderRadius: 20, padding: "4px 12px",
+            border: "1px solid #E5E7EB",
+          }}>{order.order_code}</span>
+        </div>
+      </div>
+
+      {/* FOOD 타임라인 */}
+      <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #E5E7EB", boxShadow: "0 1px 3px rgba(17,24,39,0.06)", padding: "18px" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 14 }}>진행 현황</div>
+        {FOOD_TIMELINE_STEPS.map((s, i, arr) => {
+          const done = statusIdx > i;
+          const active = statusIdx === i && order.status !== "completed";
+          return (
+            <div key={s.status} style={{ display: "flex", gap: 12, paddingBottom: i < arr.length - 1 ? 14 : 0 }}>
+              <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", flexShrink: 0 }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: 11,
+                  background: done ? "#16A34A" : active ? "#F59E0B" : "#F3F4F6",
+                  border: active ? `2px solid #F59E0B` : done ? "none" : "1.5px solid #E5E7EB",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {done && (
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                      <path d="M2 5.5l2 2 5-5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  )}
+                  {active && <div style={{ width: 8, height: 8, borderRadius: 4, background: "#F59E0B" }} />}
+                </div>
+                {i < arr.length - 1 && (
+                  <div style={{ width: 2, flex: 1, minHeight: 12, marginTop: 3, background: done ? "#16A34A" : "#F3F4F6", borderRadius: 1 }} />
+                )}
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: done || active ? 600 : 400, color: done ? "#111827" : active ? "#D97706" : "#6B7280" }}>{s.label}</div>
+                {done && <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>완료</div>}
+                {active && <div style={{ fontSize: 11, color: "#D97706", marginTop: 1 }}>진행 중…</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 function StatusIcon({ type, color }: { type: string; color: string }) {
   if (type === "check") return (
     <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
@@ -290,8 +407,13 @@ export default function OrderDetailPage() {
         {/* 결제 안내 (pending 상태) */}
         {order.status === "pending" && <PaymentGuide order={order} onSubmit={fetchOrder} />}
 
-        {/* 진행 타임라인 */}
-        {!isCancelled && (
+        {/* FOOD 조리중/픽업 가능 히어로 */}
+        {(order.status === "preparing" || order.status === "ready") && (
+          <FoodStatusHero order={order} />
+        )}
+
+        {/* 진행 타임라인 (FOOD preparing/ready일 때는 FoodStatusHero 내에 포함) */}
+        {!isCancelled && order.status !== "preparing" && order.status !== "ready" && (
           <div
             style={{
               background: "#fff", borderRadius: 16,
