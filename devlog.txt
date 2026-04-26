@@ -3,6 +3,25 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-26] 공연 예매 플로우 구현 — 좌석 선택 + 주문 확인 (P1b 디자인 적용)
+
+변경 파일:
+- frontend/mocks/fixtures/schedule.factory.ts: PerformanceSchedule 팩토리 신규 추가 (7×10 기본 좌석 레이아웃, UNAVAILABLE/SOLD/VIP/GENERAL 상태 포함)
+- frontend/mocks/fixtures/index.ts: schedule.factory 내보내기 추가
+- frontend/mocks/handlers.ts: GET /stores/:storeId/products/:productId/schedules 핸들러 추가, buildInitialState에 PERFORMANCE 스토어(멜로디 공연 동아리)·상품·2개 일정 시드 데이터 추가, resetScheduleCounter 연결
+- frontend/lib/api.ts: schedulesApi.list(storeId, productId) 추가, PerformanceSchedule 임포트
+- frontend/app/(user)/stores/[slug]/products/[productId]/page.tsx: PERFORMANCE 상품에 좌석 선택 UI 전면 재설계 — Step indicator, 공연 정보 바, Stage 시각화, 인터랙티브 좌석 그리드(선택·매진·VIP·일반석·불가), 범례, 선택 요약+CTA
+- frontend/app/(user)/cart/page.tsx: Step indicator(step 1 = 주문확인) 추가, 결제 수단 라디오 선택(카카오페이/계좌이체) 추가
+- frontend/app/(user)/stores/[slug]/page.tsx: "예매하기" 버튼에 onClick 연결 → 첫 번째 PERFORMANCE 상품 페이지로 이동
+
+주요 결정사항:
+- 좌석 키 포맷: `{Row Letter}-{Col 1-based}` (e.g. C-4) — 디자인 파일과 동일
+- 좌석 선택 총액은 tier_prices에서 계산 (GENERAL ₩10,000, VIP ₩20,000)
+- MSW 시뮬레이션: 2개 회차(1회차 10:00, 2회차 14:00), 각 회차 동일 레이아웃
+- 결제 수단 선택은 Cart 단계에서 UI만 표시 — 실제 API 호출은 OrderDetail의 "입금 완료" 버튼에서 수행
+- FOOD 상품 페이지는 단순 장바구니 담기 UI 유지
+
+-------------------------------------------------------------------------------
 [2026-04-26] 인터랙티브 요소 커서 깜빡임 전면 수정
 
 변경 파일:

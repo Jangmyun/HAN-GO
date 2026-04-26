@@ -1,6 +1,7 @@
 import { clearToken, getToken } from "./auth";
 import type {
   OrderResponse,
+  PerformanceSchedule,
   ProductResponse,
   StoreResponse,
   TicketResponse,
@@ -96,6 +97,13 @@ export const productsApi = {
     }),
   delete: (storeId: string, productId: string) =>
     request<void>(`/stores/${storeId}/products/${productId}`, { method: "DELETE" }),
+};
+
+// ─── Schedules API ───────────────────────────────────────────────────────────
+
+export const schedulesApi = {
+  list: (storeId: string, productId: string) =>
+    request<PerformanceSchedule[]>(`/stores/${storeId}/products/${productId}/schedules`),
 };
 
 // ─── Orders API ───────────────────────────────────────────────────────────────
