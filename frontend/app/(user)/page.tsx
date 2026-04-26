@@ -168,6 +168,7 @@ export default function HomePage() {
                   cursor: "pointer", background: "#fff",
                   border: "1px solid #E5E7EB",
                   boxShadow: "0 1px 3px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
+                  userSelect: "none",
                 }}
               >
                 <div

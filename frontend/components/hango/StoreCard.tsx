@@ -59,6 +59,7 @@ export default function StoreCard({ store }: Props) {
           gap: 14,
           alignItems: "center",
           cursor: "pointer",
+          userSelect: "none",
         }}
       >
         {/* 타입 아이콘 */}

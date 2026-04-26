@@ -62,7 +62,7 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="flex-1 flex flex-col items-center gap-1 cursor-pointer"
+              className="flex-1 flex flex-col items-center gap-1 cursor-pointer select-none"
             >
               <div className="relative">
                 {icon(color)}

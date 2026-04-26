@@ -125,7 +125,7 @@ export default function ExplorePage() {
                   marginBottom: 10, borderRadius: 16, overflow: "hidden", cursor: "pointer",
                   background: "#fff", border: "1px solid #E5E7EB",
                   boxShadow: "0 1px 3px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
-                  display: "flex",
+                  display: "flex", userSelect: "none",
                 }}
               >
                 <div
@@ -184,7 +184,7 @@ export default function ExplorePage() {
                         style={{
                           background: "#fff", borderRadius: 16,
                           border: "1px solid #E5E7EB", overflow: "hidden",
-                          cursor: "pointer",
+                          cursor: "pointer", userSelect: "none",
                           boxShadow: "0 1px 3px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04)",
                         }}
                       >
