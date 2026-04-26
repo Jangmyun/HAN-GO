@@ -3,6 +3,19 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-26] MSW MockProvider 타이밍 버그 수정
+
+변경 파일:
+- frontend/components/MockProvider.tsx: worker.start() 완료 전에 자식 컴포넌트가 렌더링되어 API 요청이 MSW를 우회하던 문제 수정
+
+주요 결정사항:
+- `ready` state 추가: NEXT_PUBLIC_API_MOCKING=enabled 시 worker가 준비될 때까지 자식 렌더링 차단
+- `worker.start()`가 반환하는 Promise에 `.then(() => setReady(true))` 연결
+- 모킹 비활성 시에는 초기값 `ready=true`로 즉시 렌더링
+
+원인: Service Worker는 비동기로 등록되나, HomePage useEffect가 먼저 실행되어 localhost:8000에 직접 요청 → "Not Found" 에러 발생
+
+-------------------------------------------------------------------------------
 [2026-04-23] frontend/README.md 개발 가이드 추가
 
 변경 파일:
