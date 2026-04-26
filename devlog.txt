@@ -3,6 +3,20 @@ HAN:GO Devlog
 최신 항목이 상단에 위치합니다.
 
 -------------------------------------------------------------------------------
+[2026-04-26] P1b 디자인 파일 기준 주문·결제·QR 플로우 UI 재설계 (branch: design/p1b-redesign)
+
+변경 파일:
+- frontend/app/(user)/orders/page.tsx: 주문 내역 목록 디자인 (상태 배지, 금액 강조, 카드 행 레이아웃)
+- frontend/app/(user)/orders/[orderId]/page.tsx: 상태 헤더(아이콘+설명+주문코드 pill), 결제 안내(주문번호 카드+카카오페이+계좌이체), 진행 타임라인, QR CTA
+- frontend/app/(user)/cart/page.tsx: 주문 확인 레이아웃 (항목 카드, 결제 안내 박스, 합계+CTA)
+- frontend/app/(user)/tickets/[ticketId]/page.tsx: 다크 배경 전체화면, 물리 티켓 카드(그라디언트 헤더+절취선+QR), 상태 배지
+- frontend/app/(user)/orders/guest/page.tsx: 비회원 주문 조회 디자인 (인풋 포커스 스타일, CTA 버튼, 안내 박스)
+
+주요 결정사항:
+- QRTicket 컴포넌트(components/hango/QRTicket.tsx)는 유지하되, /tickets/[ticketId]/page.tsx에서 직접 QRCodeSVG로 렌더링하도록 교체하여 디자인 파일의 물리 티켓 형태를 충실히 구현
+- 결제 안내는 카카오페이 버튼과 계좌이체를 모두 지원, ordersApi.paymentSubmit() 단일 호출로 연결
+
+-------------------------------------------------------------------------------
 [2026-04-26] P1a 디자인 파일 기준 전체 UI 재설계 (branch: design/p1a-redesign)
 
 변경 파일:
