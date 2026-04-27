@@ -47,8 +47,21 @@ function buildInitialState() {
   });
   const products = [
     perfProduct,
+    createProduct({
+      store_id: foodStore.id,
+      name: "부대찌개 세트",
+      description: "한동대 맛집 부스 대표 메뉴. 햄·소세지·라면사리 푸짐하게 담았어요.",
+      base_price: 8000,
+      stock_mode: "tracked",
+      stock: 88,
+      option_schema: [
+        { key: "spicy", label: "맵기", type: "select", values: ["순한맛", "보통", "매운맛", "아주매운맛"], required: true, price_delta: 0 },
+        { key: "egg",   label: "계란 추가",  type: "boolean", required: false, price_delta: 500 },
+        { key: "rice",  label: "공기밥 추가", type: "boolean", required: false, price_delta: 1000 },
+      ],
+    }),
     createProduct({ store_id: foodStore.id, name: "불고기 버거", base_price: 6000 }),
-    createProduct({ store_id: foodStore.id, name: "감자튀김", base_price: 3000 }),
+    createProduct({ store_id: foodStore.id, name: "감자튀김",   base_price: 3000 }),
   ];
 
   const schedules: PerformanceSchedule[] = [
